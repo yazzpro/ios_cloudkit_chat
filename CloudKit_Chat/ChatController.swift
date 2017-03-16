@@ -1,5 +1,5 @@
 //
-//  FirstViewController.swift
+//  SecondViewController.swift
 //  CloudKit_Chat
 //
 //  Created by Jarosław Pawlak on 13.03.2017.
@@ -7,11 +7,20 @@
 //
 
 import UIKit
+import CloudKit
 
-class FirstViewController: UIViewController {
+class ChatController: UIViewController {
 
+    @IBOutlet weak var tableView: UITableView!
+    var otherPerson: CKUserIdentity?
+    var currentUser: CKRecord?
+    var cloud: CloudController?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        cloud = CloudController()
+        self.title = otherPerson?.nameComponents?.givenName
         // Do any additional setup after loading the view, typically from a nib.
     }
 
