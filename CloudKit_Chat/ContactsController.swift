@@ -21,6 +21,7 @@ class ContactsController: UIViewController, UITableViewDataSource, UITableViewDe
         cloud = CloudController()
         cloud?.fetchCurrentUser(callback: { currentUser in
             self.currentUser = currentUser
+            self.cloud?.subscribeToMessages(user: currentUser.recordID)
             self.cloud?.requestDiscoverability {
                 self.cloud?.discoverAppUsers(callback: { (users) in
                     self.users = users

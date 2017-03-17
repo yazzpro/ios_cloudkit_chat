@@ -7,6 +7,8 @@
 //
 
 import UIKit
+import UserNotifications
+import CloudKit
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -16,6 +18,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+            if let error = error {
+                print("D'oh: \(error.localizedDescription)")
+            } else {
+                application.registerForRemoteNotifications()
+            }
+        }
         return true
     }
 
@@ -41,6 +50,27 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
     }
 
+    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+        var notification = CKQueryNotification(fromRemoteNotificationDictionary: userInfo)
+        var recordId = notification.recordFields?["from"]
+        
+        // Access the storyboard and fetch an instance of the view controller
+        let storyboard = UIStoryboard(name: "Main", bundle: nil);
+        let viewController: ChatController = storyboard.instantiateViewController(withIdentifier: "ChatController") as! ChatController;
+        
+        NotificationCenter.default.post(name: NSNotification.Name(rawValue: "IncomingMessage"), object: nil, userInfo: notification.recordFields)
+        
+        var cloud = CloudController()
+//        
+//        
+//        cloud.fetchPublicUserRecord(recordId: CKRecordID(recordName: recordId as! String), callback: { (userId) in
+//            viewController.otherPerson = userId
+//            
+//            
+//        })
+        // Then push that view controller onto the navigation stack
+        
+    }
 
 }
 
