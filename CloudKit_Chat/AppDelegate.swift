@@ -51,24 +51,39 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
-        var notification = CKQueryNotification(fromRemoteNotificationDictionary: userInfo)
+        
+         var notification = CKQueryNotification(fromRemoteNotificationDictionary: userInfo)
+        
+        if application.applicationState != UIApplicationState.active
+        {
+            let storyboard = UIStoryboard(name: "Main", bundle: nil);
+            let viewController: ChatController = storyboard.instantiateViewController(withIdentifier: "ChatController") as! ChatController;
+            if let controller = window?.rootViewController as? UINavigationController
+            {
+                var cloud = CloudController()
+                cloud.fetchCurrentUser(callback: { (user) in
+                    cloud.fetchPublicUserRecord(recordId: CKRecordID( recordName: notification.recordFields?["from"] as! String), callback: { (other) in
+                        viewController.otherPerson = other
+                        viewController.currentUser = user
+                        controller.popToRootViewController(animated: false)
+                        controller.pushViewController(viewController, animated: false)
+
+                        
+                    })
+                    
+                })
+            }
+            
+        }
+          NotificationCenter.default.post(name: NSNotification.Name(rawValue: "IncomingMessage"), object: nil, userInfo: notification.recordFields)
+       
         var recordId = notification.recordFields?["from"]
         
         // Access the storyboard and fetch an instance of the view controller
-        let storyboard = UIStoryboard(name: "Main", bundle: nil);
-        let viewController: ChatController = storyboard.instantiateViewController(withIdentifier: "ChatController") as! ChatController;
+       
         
-        NotificationCenter.default.post(name: NSNotification.Name(rawValue: "IncomingMessage"), object: nil, userInfo: notification.recordFields)
+       
         
-        var cloud = CloudController()
-//        
-//        
-//        cloud.fetchPublicUserRecord(recordId: CKRecordID(recordName: recordId as! String), callback: { (userId) in
-//            viewController.otherPerson = userId
-//            
-//            
-//        })
-        // Then push that view controller onto the navigation stack
         
     }
 
