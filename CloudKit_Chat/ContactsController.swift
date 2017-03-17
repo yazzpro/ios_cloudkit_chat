@@ -17,7 +17,7 @@ class ContactsController: UIViewController, UITableViewDataSource, UITableViewDe
     var currentUser: CKRecord?
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+          NotificationCenter.default.addObserver(self, selector: #selector(self.newMessageArrived(userData:)), name: NSNotification.Name(rawValue: "IncomingMessage"), object: nil)
         cloud = CloudController()
         cloud?.fetchCurrentUser(callback: { currentUser in
             self.currentUser = currentUser
@@ -69,6 +69,30 @@ class ContactsController: UIViewController, UITableViewDataSource, UITableViewDe
         }
         
     }
+    func newMessageArrived(userData: NSNotification)
+    {
+        if let info = userData.userInfo
+        {
+            if let from = info["from"] as? String
+            {
+                if let us = self.users
+                {
+                    for (index,id) in us.enumerated()
+                    {
+                        if (id.userRecordID?.recordName == from)
+                        {
+                            DispatchQueue.main.async {
+                                self.tableView.selectRow(at: IndexPath(row: index, section: 0), animated: true, scrollPosition: UITableViewScrollPosition.middle)
+                            }
+                        }
+                    }
+                }
+               
+                
+            }
+        }
+    }
+
 
 }
 
