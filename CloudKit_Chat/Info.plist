@@ -26,6 +26,8 @@
 	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Robi focie i wysyła do internetów!!! SAY YES</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
 	<key>UIRequiredDeviceCapabilities</key>

@@ -9,15 +9,25 @@
 import UIKit
 import CloudKit
 
-class ContactsController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+class ContactsController: UIViewController, UITableViewDataSource, UITableViewDelegate,UIImagePickerControllerDelegate, UINavigationControllerDelegate {
 
+    var imagePicker: UIImagePickerController?
+    
+    @IBAction func assignPhoto(_ sender: Any) {
+        present(imagePicker!, animated:true, completion:nil)
+    }
     @IBOutlet weak var tableView: UITableView!
     var cloud: CloudController?
     var users: [CKUserIdentity]?
     var currentUser: CKRecord?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
           NotificationCenter.default.addObserver(self, selector: #selector(self.newMessageArrived(userData:)), name: NSNotification.Name(rawValue: "IncomingMessage"), object: nil)
+        imagePicker = UIImagePickerController()
+        imagePicker!.delegate = self
+        imagePicker!.sourceType = .camera
+
         cloud = CloudController()
         cloud?.fetchCurrentUser(callback: { currentUser in
             self.currentUser = currentUser
@@ -45,8 +55,8 @@ class ContactsController: UIViewController, UITableViewDataSource, UITableViewDe
     {
         let user = self.users?[indexPath.row];
         
-        var cell = tableView.dequeueReusableCell(withIdentifier: "ContactCell");
-        cell?.textLabel?.text = user?.nameComponents?.description
+        let cell = tableView.dequeueReusableCell(withIdentifier: "ContactCell");
+        cell?.textLabel?.text = String.init(format: "%@ %@", user!.nameComponents!.givenName!, user!.nameComponents!.familyName!)
         return cell!
         
     }
@@ -63,7 +73,7 @@ class ContactsController: UIViewController, UITableViewDataSource, UITableViewDe
         if (segue.identifier == "ShowChat")
         {
             var ip = self.tableView.indexPathForSelectedRow
-            var d = segue.destination as! ChatController
+            let d = segue.destination as! ChatController
             d.currentUser = self.currentUser
             d.otherPerson = self.users![ip!.row]
         }
@@ -90,6 +100,14 @@ class ContactsController: UIViewController, UITableViewDataSource, UITableViewDe
                
                 
             }
+        }
+    }
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any])
+    {
+        imagePicker!.dismiss(animated: true, completion: nil)
+        if let image = info[UIImagePickerControllerOriginalImage] as? UIImage
+        {
+            cloud?.savePhoto(image)
         }
     }
 

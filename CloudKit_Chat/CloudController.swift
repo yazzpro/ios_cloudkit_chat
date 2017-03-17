@@ -8,9 +8,11 @@
 
 import Foundation
 import CloudKit
+import UIKit
 
 class CloudController
 {
+    var currentUser: CKRecord?
     func fetchCurrentUser(callback: @escaping (CKRecord)-> Void)
     {
         let container = CKContainer.default()
@@ -20,9 +22,9 @@ class CloudController
             }
             else if let userRecordId =  record
             {
-                DispatchQueue.main.async(execute: { ()->Void in
+              // DispatchQueue.main.async(execute: { ()->Void in
                     self.fetchUserRecord(recordId: userRecordId, callback: callback)
-                })
+              //  })
             }
         }
     
@@ -38,6 +40,7 @@ class CloudController
             {
                 print (err)
             }
+            self.currentUser = record
             if let r = record
             {
                 DispatchQueue.main.async(execute: { ()->Void in
@@ -171,5 +174,87 @@ class CloudController
         }
         
         
+    }
+    func fetchUserPhoto(record: CKRecordID, callback: @escaping (UIImage?)->Void)
+    {
+        fetchUserPhotoRecord(record: record) { (records) in
+            if let checkRecords = records
+            {
+                if checkRecords.count > 0
+                {
+                    var file = checkRecords[0]["photo"] as? CKAsset?
+                    if let f = file
+                    {
+                        if let data = NSData(contentsOf: (f?.fileURL)!)
+                        {
+                            callback(UIImage(data:data as Data))
+                            return
+                        }
+                    }
+                }
+            }
+            callback(nil)
+            return
+        }
+    }
+    func fetchUserPhotoRecord(record: CKRecordID, callback: @escaping ([CKRecord]?) -> Void)
+    {
+        let container = CKContainer.default()
+        let db = container.publicCloudDatabase
+        var predicate = NSPredicate(format: "(user == %@)", record)
+        var query = CKQuery(recordType: "Photo", predicate: predicate)
+        db.perform(query, inZoneWith: nil) { (records, error) in
+            if let e = error
+            {
+                print (e)
+            }
+            
+            DispatchQueue.main.async(execute: { ()->Void in
+               
+                callback(records)
+               
+            })
+            
+            
+        }
+
+
+    }
+    func savePhoto(_ image:UIImage)
+    {
+        let container = CKContainer.default()
+        let db = container.publicCloudDatabase
+
+        fetchUserPhotoRecord(record: currentUser!.recordID) { (record) in
+            if let eRec = record
+            {
+                for r in eRec
+                {
+                    db.delete(withRecordID: r.recordID, completionHandler: {_,_ in })
+                }
+            }
+            let record = CKRecord(recordType: "Photo")
+            record["userId"] = CKReference(recordID: self.currentUser!.recordID, action: CKReferenceAction.deleteSelf)
+            
+            
+            do
+            {
+                var url = NSURL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(self.currentUser!.recordID.recordName)
+                let data = UIImagePNGRepresentation(image)
+                try data?.write(to: url!, options: NSData.WritingOptions.atomicWrite)
+                
+                record["photo"] = CKAsset(fileURL: url!)
+                
+                db.save(record) { (record, error) in
+                    if let e = error
+                    {
+                        print (e)
+                    }
+                    print ("picturesaved")
+                }
+                
+            } catch { print (error) }
+
+        }
     }
 }
