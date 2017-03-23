@@ -143,7 +143,7 @@ class CloudController
     func subscribeToMessages( user: CKRecordID)
     {
          let predicate = NSPredicate(format: "to == %@", user)
-        var subscr = CKQuerySubscription(recordType: "message", predicate: predicate, options: CKQuerySubscriptionOptions.firesOnRecordCreation)
+        var subscr = CKQuerySubscription(recordType: "Message", predicate: predicate, options: CKQuerySubscriptionOptions.firesOnRecordCreation)
         let notification = CKNotificationInfo()
         notification.soundName = "default"
         notification.alertLocalizationKey = "New Message! %@"
@@ -156,12 +156,18 @@ class CloudController
         db.fetchAllSubscriptions { (subs, err) in
             for sub in subs!
             {
-            db.delete(withSubscriptionID: sub.subscriptionID, completionHandler: { (text, err) in
-                if let t = text
-                {   print(t)}
-                if let e = err
-                {print (e)}
-            })
+                if let qsub = sub as? CKQuerySubscription
+                {
+                    if qsub.recordType == "Message"
+                    {
+                        db.delete(withSubscriptionID: sub.subscriptionID, completionHandler: { (text, err) in
+                            if let t = text
+                            {   print(t)}
+                            if let e = err
+                            {print (e)}
+                        })
+                    }
+                }
             }
         
             db.save(subscr) { (subs, err) in
@@ -174,6 +180,41 @@ class CloudController
         }
         
         
+    }
+    func subscribeToPhotoChange (user: CKRecordID)
+    {
+        let predicate = NSPredicate(format: "userId == %@", user)
+        let subscr = CKQuerySubscription(recordType: "Photo", predicate: predicate, options:  CKQuerySubscriptionOptions.firesOnRecordUpdate)
+        let notification = CKNotificationInfo()
+        notification.soundName = "default"
+        notification.alertLocalizationKey = "New Message! %@"
+        notification.alertLocalizationArgs = ["message"]
+        notification.desiredKeys = ["message", "from"]
+        subscr.notificationInfo = notification
+        
+        let container = CKContainer.default()
+        let db = container.privateCloudDatabase // gdzie subskrypcje?
+        db.fetchAllSubscriptions { (subs, err) in
+            for sub in subs!
+            { sub.autoContentAccessingProxy
+                db.delete(withSubscriptionID: sub.subscriptionID, completionHandler: { (text, err) in
+                    if let t = text
+                    {   print(t)}
+                    if let e = err
+                    {print (e)}
+                })
+            }
+            
+            db.save(subscr) { (subs, err) in
+                if let e = err
+                {
+                    print(e)
+                }
+                
+            }
+        }
+        
+
     }
     func fetchUserPhoto(record: CKRecordID, callback: @escaping (UIImage?)->Void)
     {
@@ -201,7 +242,7 @@ class CloudController
     {
         let container = CKContainer.default()
         let db = container.publicCloudDatabase
-        var predicate = NSPredicate(format: "(user == %@)", record)
+        var predicate = NSPredicate(format: "(userId == %@)", record)
         var query = CKQuery(recordType: "Photo", predicate: predicate)
         db.perform(query, inZoneWith: nil) { (records, error) in
             if let e = error

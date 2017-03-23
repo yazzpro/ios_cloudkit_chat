@@ -24,10 +24,12 @@ class ContactsController: UIViewController, UITableViewDataSource, UITableViewDe
     override func viewDidLoad() {
         super.viewDidLoad()
           NotificationCenter.default.addObserver(self, selector: #selector(self.newMessageArrived(userData:)), name: NSNotification.Name(rawValue: "IncomingMessage"), object: nil)
+       if (UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.camera))
+       {
         imagePicker = UIImagePickerController()
         imagePicker!.delegate = self
         imagePicker!.sourceType = .camera
-
+        }
         cloud = CloudController()
         cloud?.fetchCurrentUser(callback: { currentUser in
             self.currentUser = currentUser
@@ -46,6 +48,10 @@ class ContactsController: UIViewController, UITableViewDataSource, UITableViewDe
             // Do any additional setup after loading the view, typically from a nib.
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.tableView.reloadData()
+    }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
@@ -54,13 +60,30 @@ class ContactsController: UIViewController, UITableViewDataSource, UITableViewDe
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell
     {
         let user = self.users?[indexPath.row];
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(imageTapped(_:)))
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: "ContactCell");
-        cell?.textLabel?.text = String.init(format: "%@ %@", user!.nameComponents!.givenName!, user!.nameComponents!.familyName!)
+        
+        let cell = tableView.dequeueReusableCell(withIdentifier: "ContactCell") as? ContactTableViewCell;
+        cell?.TitleLabel.text = String.init(format: "%@ %@", user!.nameComponents!.givenName!, user!.nameComponents!.familyName!)
+        cell?.PhotoView.addGestureRecognizer(tapGesture)
+        cell?.PhotoView.isUserInteractionEnabled = true
+        cloud?.fetchUserPhoto(record: (user?.userRecordID)!, callback: { (image) in
+            cell?.PhotoView.image = image
+            
+        })
         return cell!
         
     }
-
+    var imageToShowBig : UIImage?
+    func imageTapped(_ gesture: UIGestureRecognizer)
+    {
+        if let iView = gesture.view as? UIImageView
+        {
+          self.imageToShowBig = iView.image
+        }
+        
+        performSegue(withIdentifier: "ShowImage", sender: self)
+    }
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int
     {
         if let u = self.users
@@ -76,6 +99,11 @@ class ContactsController: UIViewController, UITableViewDataSource, UITableViewDe
             let d = segue.destination as! ChatController
             d.currentUser = self.currentUser
             d.otherPerson = self.users![ip!.row]
+        }
+        if (segue.identifier == "ShowImage")
+        {
+            var d = segue.destination as! ProfileImageController
+            d.setImage(image: self.imageToShowBig)
         }
         
     }

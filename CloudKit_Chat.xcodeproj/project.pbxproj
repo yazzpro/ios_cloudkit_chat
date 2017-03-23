@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		EF10E6551E7C1473003ABF5E /* ContactTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF10E6541E7C1473003ABF5E /* ContactTableViewCell.swift */; };
+		EF10E6571E7C27FE003ABF5E /* ProfileImageController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF10E6561E7C27FE003ABF5E /* ProfileImageController.swift */; };
 		EF9AC1BB1E76DED0007B58FF /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF9AC1BA1E76DED0007B58FF /* AppDelegate.swift */; };
 		EF9AC1BD1E76DED0007B58FF /* ContactsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF9AC1BC1E76DED0007B58FF /* ContactsController.swift */; };
 		EF9AC1BF1E76DED0007B58FF /* ChatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF9AC1BE1E76DED0007B58FF /* ChatController.swift */; };
@@ -37,6 +39,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		EF10E6541E7C1473003ABF5E /* ContactTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContactTableViewCell.swift; sourceTree = "<group>"; };
+		EF10E6561E7C27FE003ABF5E /* ProfileImageController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProfileImageController.swift; sourceTree = "<group>"; };
 		EF9AC1B71E76DED0007B58FF /* CloudKit_Chat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CloudKit_Chat.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EF9AC1BA1E76DED0007B58FF /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		EF9AC1BC1E76DED0007B58FF /* ContactsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactsController.swift; sourceTree = "<group>"; };
@@ -115,6 +119,8 @@
 				EF9AC1C31E76DED0007B58FF /* Assets.xcassets */,
 				EF9AC1C51E76DED0007B58FF /* LaunchScreen.storyboard */,
 				EF9AC1C81E76DED0007B58FF /* Info.plist */,
+				EF10E6541E7C1473003ABF5E /* ContactTableViewCell.swift */,
+				EF10E6561E7C27FE003ABF5E /* ProfileImageController.swift */,
 			);
 			path = CloudKit_Chat;
 			sourceTree = "<group>";
@@ -294,9 +300,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				EF9AC1BF1E76DED0007B58FF /* ChatController.swift in Sources */,
+				EF10E6551E7C1473003ABF5E /* ContactTableViewCell.swift in Sources */,
 				EF9AC1BB1E76DED0007B58FF /* AppDelegate.swift in Sources */,
 				EFFB2EDA1E77C2A4009AAC46 /* CloudController.swift in Sources */,
 				EF9AC1BD1E76DED0007B58FF /* ContactsController.swift in Sources */,
+				EF10E6571E7C27FE003ABF5E /* ProfileImageController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
