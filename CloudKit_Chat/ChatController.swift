@@ -47,7 +47,10 @@ class ChatController: UIViewController, UITableViewDelegate, UITableViewDataSour
             self.tableView.reloadData()
             var lastId = self.records?.count
             var ip = IndexPath(row: lastId!-1, section: 0)
-            self.tableView.scrollToRow(at: ip, at: UITableViewScrollPosition.bottom, animated: true)
+            if ip.row > 0
+            {
+                self.tableView.scrollToRow(at: ip, at: UITableViewScrollPosition.bottom, animated: true)
+            }
             
             
         })

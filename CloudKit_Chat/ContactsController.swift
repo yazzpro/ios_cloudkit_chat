@@ -24,25 +24,40 @@ class ContactsController: UIViewController, UITableViewDataSource, UITableViewDe
     override func viewDidLoad() {
         super.viewDidLoad()
           NotificationCenter.default.addObserver(self, selector: #selector(self.newMessageArrived(userData:)), name: NSNotification.Name(rawValue: "IncomingMessage"), object: nil)
+         NotificationCenter.default.addObserver(self, selector: #selector(reloadTableView), name: NSNotification.Name(rawValue: "ReloadPhoto"), object: nil)
        if (UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.camera))
        {
         imagePicker = UIImagePickerController()
         imagePicker!.delegate = self
         imagePicker!.sourceType = .camera
+       } else  if (UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.photoLibrary))
+       {
+        imagePicker = UIImagePickerController()
+        imagePicker!.delegate = self
+        imagePicker!.sourceType = .photoLibrary
         }
+
+        
         cloud = CloudController()
         cloud?.fetchCurrentUser(callback: { currentUser in
             self.currentUser = currentUser
+ //          self.cloud?.clearPhotoSUbscriptions(user: currentUser.recordID)
+ //          {
             self.cloud?.subscribeToMessages(user: currentUser.recordID)
             self.cloud?.requestDiscoverability {
                 self.cloud?.discoverAppUsers(callback: { (users) in
                     self.users = users
+                    for u in self.users!
+                    {
+                        self.cloud?.subscribeToPhotoChange(user: u.userRecordID!)
+                    }
                     DispatchQueue.main.async {
                         self.tableView!.reloadData()
                     }
                 })
  
-            }
+             }
+    //       }
         })
 
             // Do any additional setup after loading the view, typically from a nib.
@@ -56,7 +71,10 @@ class ContactsController: UIViewController, UITableViewDataSource, UITableViewDe
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-    
+    func reloadTableView()
+    {
+        self.tableView.reloadData()
+    }
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell
     {
         let user = self.users?[indexPath.row];

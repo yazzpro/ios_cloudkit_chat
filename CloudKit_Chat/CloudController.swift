@@ -152,7 +152,7 @@ class CloudController
         subscr.notificationInfo = notification
        
         let container = CKContainer.default()
-        let db = container.privateCloudDatabase // gdzie subskrypcje?
+        let db = container.publicCloudDatabase // gdzie subskrypcje?
         db.fetchAllSubscriptions { (subs, err) in
             for sub in subs!
             {
@@ -181,38 +181,51 @@ class CloudController
         
         
     }
+    func clearPhotoSUbscriptions(user:CKRecordID, callback: @escaping () -> Void)    {
+        let container = CKContainer.default()
+        let db = container.publicCloudDatabase // gdzie subskrypcje?
+
+        db.fetchAllSubscriptions { (subs, err) in
+            for sub in subs!
+            {
+                if let qsub = sub as? CKQuerySubscription
+                {
+                    if qsub.recordType == "Photo"
+                    {
+                        db.delete(withSubscriptionID: sub.subscriptionID, completionHandler: { (text, err) in
+                            if let t = text
+                            {   print(t)}
+                            if let e = err
+                            {print (e)}
+                        })
+                    }
+                }
+            }
+            callback()
+            
+        }
+
+    }
     func subscribeToPhotoChange (user: CKRecordID)
     {
         let predicate = NSPredicate(format: "userId == %@", user)
-        let subscr = CKQuerySubscription(recordType: "Photo", predicate: predicate, options:  CKQuerySubscriptionOptions.firesOnRecordUpdate)
-        let notification = CKNotificationInfo()
-        notification.soundName = "default"
-        notification.alertLocalizationKey = "New Message! %@"
-        notification.alertLocalizationArgs = ["message"]
-        notification.desiredKeys = ["message", "from"]
-        subscr.notificationInfo = notification
+        let subscr = CKQuerySubscription(recordType: "Photo", predicate: predicate, options:  CKQuerySubscriptionOptions.firesOnRecordCreation )
         
         let container = CKContainer.default()
-        let db = container.privateCloudDatabase // gdzie subskrypcje?
-        db.fetchAllSubscriptions { (subs, err) in
-            for sub in subs!
-            { sub.autoContentAccessingProxy
-                db.delete(withSubscriptionID: sub.subscriptionID, completionHandler: { (text, err) in
-                    if let t = text
-                    {   print(t)}
-                    if let e = err
-                    {print (e)}
-                })
-            }
-            
-            db.save(subscr) { (subs, err) in
+        let db = container.publicCloudDatabase // gdzie subskrypcje?
+        let notification = CKNotificationInfo()
+        notification.alertLocalizationArgs = ["userId"]
+
+        notification.shouldSendContentAvailable = true
+        subscr.notificationInfo = notification
+
+        db.save(subscr) { (subs, err) in
                 if let e = err
                 {
                     print(e)
                 }
                 
             }
-        }
         
 
     }
